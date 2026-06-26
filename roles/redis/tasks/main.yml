@@ -1,0 +1,47 @@
+
+- name: Installing required packages
+  package:
+    name:
+      - gpg
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: printing gather facts
+  debug:
+    var: ansible_distribution_release
+
+- name: redis setup
+  import_role:
+    name: common
+    tasks_from: redis_setup
+
+- name: Update cache
+  import_role:
+    name: common
+    tasks_from: update_cache
+
+- name: Install redis
+  package:
+    name: redis
+    state: present
+
+- name: enable and start the service
+  service:
+    name: redis-server
+    state: started
+    enabled: yes
+  
+- name: Allowing remote connections
+  replace:
+    path: /etc/redis/redis.conf
+    regexp: '127.0.0.1'
+    replace: '0.0.0.0'
+
+- name: change protected mode
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: 'protected-mode'
+    line: 'protected-mode no'
+  notify:
+    - restart redis

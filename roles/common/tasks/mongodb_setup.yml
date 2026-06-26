@@ -1,0 +1,14 @@
+- name: Downloading gpg key for mongodb repo
+  get_url:
+    url: https://pgp.mongodb.com/server-7.0.asc
+    dest: /tmp/mongodb.asc
+
+- name: convert gpg key to keyring format
+  command: 
+    cmd: gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor /tmp/mongodb.asc
+    creates: /usr/share/keyrings/mongodb-server-7.0.gpg
+
+- name: copy mongodb repo from local to destination
+  copy:
+    src: mongodb.list
+    dest: /etc/apt/sources.list.d/mongodb-org-7.0.list

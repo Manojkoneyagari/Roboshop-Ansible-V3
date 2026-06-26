@@ -1,0 +1,53 @@
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install pymysql and unzip
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3-pymysql
+    - unzip
+
+- name: application setup
+  import_role:
+    name: common
+    tasks_from: app_setup
+
+- name: java installation
+  import_role:
+    name: common
+    tasks_from: java_setup
+
+- name: "copy {{ component }} service"
+  import_role:
+    name: common
+    tasks_from: copy_service
+
+
+- name: Install mysql client
+  apt:
+    name: mysql-client
+    state: present
+
+- name: Load schema.sql
+  community.mysql.mysql_db:
+    login_host: mysql.manojkoney.store
+    login_user: root
+    login_password: "Manoj@123"
+    name: all
+    state: import
+    target: "{{ item }}"
+  loop:
+    - /app/db/schema.sql
+    - /app/db/app-user.sql 
+    - /app/db/master-data.sql
+
+- name: Restart service
+  import_role:
+    name: common
+    tasks_from: service_restart
+          
+

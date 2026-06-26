@@ -1,0 +1,7 @@
+#msg: "{{ root_pass.secret }}"
+#since the the key name is just secret so we can use above syntax to access json key value
+# msg: "{{ root_pass['roboshop/secret'] }}"
+#if key name is roboshop/secret since its has special notations like / so we are using above syntax to access json value
+
+#since vault.yaml encrypt file belongs to mysql, we saved in seperate mysql folder under groups_vars, if it is useful to all roles then 
+# create all folder under groups_vars then save the file, so every role can access

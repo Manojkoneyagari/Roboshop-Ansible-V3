@@ -1,0 +1,32 @@
+
+- name: Installing required packages
+  package:
+    name:
+      - gpg
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Mongodb setup
+  import_role:
+    name: common
+    tasks_from: mongodb_setup
+
+- name: Update cache
+  import_role:
+    name: common
+    tasks_from: update_cache
+
+- name: Install mongodb
+  package:
+    name: mongodb-org
+    state: present
+
+  
+- name: Allowing remote connections
+  replace:
+    path: /etc/mongod.conf
+    regexp: '127.0.0.1'
+    replace: '0.0.0.0'
+  notify: restart mongod
+    

@@ -1,0 +1,56 @@
+
+- name: update cache
+  apt:
+    update_cache: yes
+
+- name: Install mysql
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mysql-server
+    - python3-pymysql
+
+- name: printing password from ansible vault
+  debug:
+    msg: "{{ Mysql_password }}"
+
+- name: printing password from aws secret manager
+  debug:
+    msg: "{{ root_pass.secret }}"
+   # msg: "{{ root_pass['roboshop/secret'] }}"
+
+- name: configuring root localhost configuration
+  shell: mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;"
+  ignore_errors: yes
+
+- name: create root user for remote connection
+  community.mysql.mysql_user:
+    name: root
+    host: "%"
+    password: "{{ Mysql_password }}"
+    priv: "*.*:ALL,GRANT"
+    state: present 
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Flush privileges
+  community.mysql.mysql_query:
+    query: FLUSH PRIVILEGES;
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+
+- name: Allowing remote connections
+  replace:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '127.0.0.1'
+    replace: '0.0.0.0'
+
+
+- name: restart mysql
+  import_role:
+    name: common
+    tasks_from: service_restart
+
+
+
+#mysql -host mysql.manojkoney.store -u root -pManoj@123

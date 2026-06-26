@@ -1,0 +1,33 @@
+- name: create roboshop system user
+  ansible.builtin.user:
+    name: roboshop
+    home: /app
+    shell: /sbin/nologin
+    system: true
+    comment: roboshop system user
+
+- name: removing directory if it exists
+  ansible.builtin.file:
+    path: /app
+    state: absent
+
+- name: "Remove a {{ component }} zip file if it exists"
+  ansible.builtin.file:
+    path: "/tmp/{{ component }}.zip"
+    state: absent
+
+- name: Creating directory
+  ansible.builtin.file:
+    path: /app
+    state: directory
+
+- name: "Downloading {{ component }} code"
+  get_url:
+    url: "https://roboshop-artifacts.s3.amazonaws.com/{{ component }}-v3.zip"
+    dest: "/tmp/{{ component }}.zip"
+
+- name: unzip the file
+  unarchive:
+    src: "/tmp/{{ component }}.zip"
+    dest: /app
+    remote_src: yes

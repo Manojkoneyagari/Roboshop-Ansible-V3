@@ -1,0 +1,7 @@
+- name: setup "{{ component }}" configuration
+  hosts: "{{ component }}"
+  become: yes
+  roles:
+    - "{{ component }}"
+
+#ansible-playbook main.yaml -e "component=mongodb"

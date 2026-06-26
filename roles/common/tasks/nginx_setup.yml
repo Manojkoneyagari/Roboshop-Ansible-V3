@@ -1,0 +1,14 @@
+- name: Downloading gpg key for nginx repo
+  get_url:
+    url: https://nginx.org/keys/nginx_signing.key
+    dest: /tmp/nginx.key
+
+- name: convert gpg key to keyring format
+  command: 
+    cmd: gpg -o /usr/share/keyrings/nginx-archive-keyring.gpg --dearmor /tmp/nginx.key
+    creates: /usr/share/keyrings/nginx-archive-keyring.gpg
+
+- name: copy nginx repo from local to destination
+  template:
+    src: ./nginx.list.j2
+    dest: /etc/apt/sources.list.d/nginx.list

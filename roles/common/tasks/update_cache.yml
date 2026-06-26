@@ -1,0 +1,3 @@
+- name: Install cache
+  apt:
+    update_cache: yes

@@ -1,0 +1,69 @@
+- name: Update cache
+  import_role:
+    name: common
+    tasks_from: update_cache
+
+- name: Install prerequisites
+  apt:
+    name:
+      - curl
+      - ca-certificates
+      - gnupg
+      - unzip
+    state: present
+
+- name: application setup
+  import_role:
+    name: common
+    tasks_from: app_setup
+
+- name: Install Nodejs
+  import_role:
+    name: common
+    tasks_from: nodejs
+
+- name: "copy {{ component }} service"
+  import_role:
+    name: common
+    tasks_from: copy_service
+
+
+- name: Mongodb setup
+  import_role:
+    name: common
+    tasks_from: mongodb_setup
+
+- name: Update cache
+  import_role:
+    name: common
+    tasks_from: update_cache
+
+- name: Install mongodb client
+  package:
+    name: mongodb-mongosh
+    state: present
+
+- name: check catalogue schema exist ot not
+  shell: mongosh --host "{{ MONGODB_HOST }}" --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
+  register: catalogue_output
+  tags:
+  - mongodb
+
+- name: print catalogue_output
+  debug: 
+    msg: "{{ catalogue_output }}"
+  tags:
+  - mongodb
+- name: load products
+  shell: mongosh --host "{{ MONGODB_HOST }}" </app/db/master-data.js
+  when: catalogue_output.stdout | int < 0
+  tags:
+  - mongodb
+
+- name: Restart service
+  import_role:
+    name: common
+    tasks_from: service_restart.yml
+
+
+

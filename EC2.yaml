@@ -1,0 +1,121 @@
+- name: Automating EC2 creation using ansible
+  hosts: local
+  connection: local
+  vars:
+    instances: ["mongodb", "mysql", "rabbitmq", "redis", "catalogue", "shipping", "cart", "user", "payment", "frontend"]
+    AMI: ami-05cf1e9f73fbad2e2
+    Hosted_Zone: "manojkoney.store"
+    Record_Name: "manojkoney.store"
+    action: "create"
+  tasks:
+
+  #Printing variables
+    - name: printing instances 
+      debug:
+        var: instances
+
+    - name: printing action 
+      debug:
+        var: action
+      
+
+    - name: creating EC2 instances
+      amazon.aws.ec2_instance:  
+        name: "{{ item }}-roboshop"
+        key_name: "Key"
+        instance_type: t3.micro
+        region: us-east-1
+        image_id: "{{ AMI }}"
+        security_groups:
+        - "{{ item }}-roboshop"
+        - common-roboshop
+      register: ec2_output
+      loop: "{{ instances }}"
+      when: action == "create"
+
+
+   # - name: printing instance name and ipaddress
+   #   debug:
+   #     msg: "instance_name: {{ item.item }} and ipaddress: {{ item.instances[0].private_ip_address }}"
+    #  loop: "{{ ec2_output.results }}"
+
+
+
+  #create route 53 records
+    - name: creating route53 record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ Hosted_Zone }}"
+        record: "{{ item.item }}.{{ Record_Name }}"
+        type: A
+        ttl: 1
+        value: "{{ item.instances[0].private_ip_address }}"
+        overwrite: true
+      loop: "{{ ec2_output.results }}"
+      when: 
+        - action == "create" 
+
+
+
+    - name: creating route53 record for frontend
+      amazon.aws.route53:
+        state: present
+        zone: "{{ Hosted_Zone }}"
+        record: "{{ Record_Name }}"
+        type: A
+        ttl: 1
+        value: "{{ item.instances[0].public_ip_address }}"
+        overwrite: true
+      loop: "{{ ec2_output.results }}"
+      when:   
+        - action == "create"
+        - item.item == "frontend"
+
+
+  
+
+#Deleting route 53 records
+    - name: Deleting route53 record
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ Hosted_Zone }}"
+        record: "{{ item }}.{{ Record_Name }}"
+        type: A
+        ttl: 1
+      loop: "{{ instances }}"
+      when:   
+        - action == "delete"
+
+
+
+    - name: Deleting route53 record for frontend
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ Hosted_Zone }}"
+        record: "{{ Record_Name }}"
+        type: A
+        ttl: 1
+      loop: "{{ instances }}"
+      when:   
+        - action == "delete"
+        - item == "frontend"
+
+    
+#Deleting EC2 instances
+    - name: Delete the EC2 instance
+      amazon.aws.ec2_instance:
+        state: terminated
+        name: "{{ item }}-roboshop"
+        wait: false
+        
+      loop: "{{ instances }}"
+      when: action == "delete"
+
+      
+
+  #commands
+  # ansible-playbook EC2.yaml -e '{"action":"delete","instances":["mongodb"]}'
+  # ansible-playbook EC2.yaml -e '{"action":"delete"}'
+  # ansible-playbook EC2.yaml -e '{"action":"delete","instances":["mongodb","redis","mysql","rabbitmq"]}'
+
+

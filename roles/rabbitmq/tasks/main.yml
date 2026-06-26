@@ -1,0 +1,36 @@
+
+- name: update cache
+  apt:
+    update_cache: yes
+
+- name: Install rabbitmq
+  package:
+    name: rabbitmq-server
+    state: present
+
+
+- name: Start and enable rabbitmq
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+- name: Add RabbitMQ user roboshop
+  community.rabbitmq.rabbitmq_user:
+    user: roboshop
+    password: "Roboshop@123"
+    update_password: always
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    state: present
+
+
+- name: Restart rabbitmq
+  service:
+    name: rabbitmq-server
+    state: restarted
+        
+  

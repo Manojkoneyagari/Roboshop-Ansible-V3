@@ -1,0 +1,15 @@
+MONGODB_HOST: mongodb.manojkoney.store
+REDIS_HOST: redis.manojkoney.store
+USER_HOST: user.manojkoney.store
+CATALOGUE_HOST: catalogue.manojkoney.store
+MYSQL_HOST: mysql.manojkoney.store
+RABBITMQ_HOST: rabbitmq.manojkoney.store
+CART_HOST: cart.manojkoney.store
+SHIPPING_HOST: shipping.manojkoney.store
+PAYMENT_HOST: payment.manojkoney.store
+
+
+
+
+#ansible-vault create secret.yaml or anyname
+#ansible-vault view secret.yaml

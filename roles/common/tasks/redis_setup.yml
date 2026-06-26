@@ -1,0 +1,14 @@
+- name: Downloading gpg key for redis repo
+  get_url:
+    url: https://packages.redis.io/gpg
+    dest: /tmp/redis.gpg
+
+- name: convert gpg key to keyring format
+  command:
+    cmd: gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg /tmp/redis.gpg
+    creates: /usr/share/keyrings/redis-archive-keyring.gpg
+
+- name: copy redis repo from local to destination
+  template:
+    src: redis.list.j2
+    dest: /etc/apt/sources.list.d/redis.list

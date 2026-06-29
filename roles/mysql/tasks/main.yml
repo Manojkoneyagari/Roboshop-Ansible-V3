@@ -11,14 +11,10 @@
     - mysql-server
     - python3-pymysql
 
-- name: printing password from ansible vault
+- name: printing password from aws systems parameter
   debug:
     msg: "{{ Mysql_password }}"
 
-- name: printing password from aws secret manager
-  debug:
-    msg: "{{ root_pass.secret }}"
-   # msg: "{{ root_pass['roboshop/secret'] }}"
 
 - name: configuring root localhost configuration
   shell: mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;"

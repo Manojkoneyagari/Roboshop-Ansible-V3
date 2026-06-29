@@ -1,6 +1,8 @@
 #Mysql_password: Manoj@123
 
-root_pass: "{{ lookup('amazon.aws.aws_secret', 'roboshop/secret', region='us-east-1') | from_json }}"
+#root_pass: "{{ lookup('amazon.aws.aws_secret', 'roboshop/secret', region='us-east-1') | from_json }}"
+
+Mysql_password: "{{ lookup('amazon.aws.aws_ssm', '/roboshop/dev/mysql/password', region='us-east-1', decrypt=False ) }}"
 
 
 #ansible-playbook main.yaml -e "component=mysql" --ask-vault-password
